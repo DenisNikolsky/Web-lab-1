@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Интернет-магазин</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header">
+    <h1>Магазин</h1>
+    <p>Простые товары для дома</p>
+  </header>
+
+  <main class="layout">
+    <section class="catalog" aria-labelledby="catalog-title">
+      <h2 id="catalog-title">Каталог товаров</h2>
+      <div class="products" id="products"></div>
+    </section>
+
+    <aside class="cart" aria-labelledby="cart-title">
+      <h2 id="cart-title">Корзина</h2>
+      <ul class="cart-list" id="cart-list"></ul>
+      <p class="cart-empty" id="cart-empty">Корзина пуста</p>
+      <div class="cart-summary">
+        <span>Итого:</span>
+        <strong id="cart-total">0 ₽</strong>
+      </div>
+      <button class="btn btn-primary" id="checkout-btn" type="button">
+        Оформить заказ
+      </button>
+    </aside>
+  </main>
+
+  <dialog class="modal" id="order-modal">
+    <form class="order-form" id="order-form">
+      <h2>Оформление заказа</h2>
+
+      <label>
+        Имя
+        <input type="text" name="firstName" required>
+      </label>
+
+      <label>
+        Фамилия
+        <input type="text" name="lastName" required>
+      </label>
+
+      <label>
+        Адрес доставки
+        <input type="text" name="address" required>
+      </label>
+
+      <label>
+        Контактный телефон
+        <input type="tel" name="phone" required>
+      </label>
+
+      <div class="modal-actions">
+        <button type="button" class="btn" id="close-modal">Отмена</button>
+        <button type="submit" class="btn btn-primary">Создать заказ</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
