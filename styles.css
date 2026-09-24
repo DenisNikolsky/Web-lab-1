@@ -198,6 +198,13 @@ body {
   margin-top: auto;
 }
 
+.product-note {
+  margin: -4px 0 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
 /* ---------- Buttons ---------- */
 .btn {
   padding: 10px 16px;
@@ -441,6 +448,33 @@ body {
   margin-top: 8px;
 }
 
+/* ---------- Field errors ---------- */
+.field-hint {
+  font-weight: 400;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.field-error {
+  display: none;
+  font-size: 0.8rem;
+  color: #c62828;
+  margin-top: 2px;
+}
+
+.field-error.visible {
+  display: block;
+}
+
+.order-form input.invalid {
+  border-color: #e57373;
+  background: #fff5f5;
+}
+
+.order-form input.invalid:focus {
+  box-shadow: 0 0 0 3px #fde0e0;
+}
+
 /* ---------- Footer ---------- */
 .footer {
   background: var(--dark);
@@ -583,7 +617,7 @@ body {
   }
 
   .logo__text {
-    font-size: 1rem;
+    font-size: 1.1rem;
   }
 
   .hero {
@@ -620,30 +654,4 @@ body {
     grid-template-columns: 1fr;
     padding: 28px 16px 16px;
   }
-}
-
-.field-hint {
-  font-weight: 400;
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.field-error {
-  display: none;
-  font-size: 0.8rem;
-  color: #c62828;
-  margin-top: 2px;
-}
-
-.field-error.visible {
-  display: block;
-}
-
-.order-form input.invalid {
-  border-color: #e57373;
-  background: #fff5f5;
-}
-
-.order-form input.invalid:focus {
-  box-shadow: 0 0 0 3px #fde0e0;
 }

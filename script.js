@@ -1,18 +1,20 @@
+/* ---------- Данные ---------- */
 const products = [
-  { id: 1,  title: "Кружка",                    price: 500,               emoji: "☕"  },
-  { id: 2,  title: "Термос",                    price: 1500,              emoji: "🥤"  },
-  { id: 3,  title: "Плед",                      price: 2000,              emoji: "🛋️" },
-  { id: 4,  title: "Лампа",                     price: 1200,              emoji: "💡"  },
-  { id: 5,  title: "Рюкзак",                    price: 3000,              emoji: "🎒"  },
-  { id: 6,  title: "Наушники",                  price: 2500,              emoji: "🎧"  },
-
-  { id: 7,  title: "Губозакаточная машинка",    price: 999999,            emoji: "🌀"  },
-  { id: 8,  title: "Принтер для денег",         price: 1000000,           emoji: "🖨️" },
-  { id: 9,  title: "МКС",                       price: 150000000000,      emoji: "🛰️" },
-  { id: 10, title: "Билет из Саратова",         price: 500,               emoji: "🎫"  },
+  { id: 1,  title: "Кружка",                 price: 500,          emoji: "☕"  },
+  { id: 2,  title: "Термос",                 price: 1500,         emoji: "🥤"  },
+  { id: 3,  title: "Плед",                   price: 2000,         emoji: "🛋️" },
+  { id: 4,  title: "Лампа",                  price: 1200,         emoji: "💡"  },
+  { id: 5,  title: "Рюкзак",                 price: 3000,         emoji: "🎒"  },
+  { id: 6,  title: "Наушники",               price: 2500,         emoji: "🎧"  },
+  { id: 7,  title: "Губозакаточная машинка", price: 999999,       emoji: "🌀"  },
+  { id: 8,  title: "Принтер для денег",      price: 1000000,      emoji: "🖨️" },
+  { id: 9,  title: "МКС",                    price: 150000000000, emoji: "🛰️" },
+  { id: 10, title: "Билет из Саратова",      price: 500,          emoji: "🎫"  },
 ];
 
 const STORAGE_KEY = "shop-cart";
+
+/* ---------- Элементы DOM ---------- */
 const productsContainer = document.getElementById("products");
 const cartList = document.getElementById("cart-list");
 const cartEmpty = document.getElementById("cart-empty");
@@ -23,17 +25,10 @@ const orderModal = document.getElementById("order-modal");
 const orderForm = document.getElementById("order-form");
 const closeModalBtn = document.getElementById("close-modal");
 
-const productEmoji = {
-  1: "☕",
-  2: "🥤",
-  3: "🛋️",
-  4: "💡",
-  5: "🎒",
-  6: "🎧",
-};
-
+/* ---------- Состояние ---------- */
 let cart = loadCart();
 
+/* ---------- Работа с localStorage ---------- */
 function loadCart() {
   try {
     return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
@@ -46,6 +41,7 @@ function saveCart() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
 }
 
+/* ---------- Форматирование ---------- */
 function formatPrice(value) {
   return new Intl.NumberFormat("ru-RU", {
     style: "currency",
@@ -54,14 +50,16 @@ function formatPrice(value) {
   }).format(value);
 }
 
+/* ---------- Отрисовка ---------- */
 function renderProducts() {
   productsContainer.innerHTML = products
     .map(
       (product) => `
       <article class="product-card">
-        <div class="product-card__emoji">${productEmoji[product.id] || "📦"}</div>
+        <div class="product-card__emoji">${product.emoji}</div>
         <h3>${product.title}</h3>
         <p class="price">${formatPrice(product.price)}</p>
+        ${product.id === 10 ? '<p class="product-note">Только в одну сторону 😉</p>' : ""}
         <button class="btn btn-primary" type="button" data-add="${product.id}">
           В корзину
         </button>
@@ -73,14 +71,7 @@ function renderProducts() {
 
 function renderCart() {
   const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-  cartCount.textContent = totalCount;
-
-  if (cart.length === 0) {
-    cartList.innerHTML = "";
-    cartEmpty.hidden = false;
-    cartTotal.textContent = formatPrice(0);
-    return;
-  }
+  if (cartCount) cartCount.textContent = totalCount;
 
   if (cart.length === 0) {
     cartList.innerHTML = "";
@@ -98,7 +89,7 @@ function renderCart() {
         <div class="cart-item__title">${item.title}</div>
         <div class="cart-item__row">
           <div class="quantity-controls">
-            <button class="btn" type="button" data-decrease="${item.id}">−</button>
+            <button type="button" data-decrease="${item.id}">−</button>
             <input
               type="number"
               min="1"
@@ -107,9 +98,9 @@ function renderCart() {
               data-quantity="${item.id}"
               aria-label="Количество ${item.title}"
             >
-            <button class="btn" type="button" data-increase="${item.id}">+</button>
+            <button type="button" data-increase="${item.id}">+</button>
           </div>
-          <strong>${formatPrice(item.price * item.quantity)}</strong>
+          <strong class="cart-item__price">${formatPrice(item.price * item.quantity)}</strong>
           <button class="btn btn-danger" type="button" data-remove="${item.id}">
             Удалить
           </button>
@@ -127,6 +118,7 @@ function updateTotal() {
   cartTotal.textContent = formatPrice(total);
 }
 
+/* ---------- Логика корзины ---------- */
 function addToCart(productId) {
   const product = products.find((p) => p.id === productId);
   if (!product) return;
@@ -185,6 +177,7 @@ function setQuantity(productId, value) {
   renderCart();
 }
 
+/* ---------- События каталога и корзины ---------- */
 productsContainer.addEventListener("click", (event) => {
   const button = event.target.closest("[data-add]");
   if (!button) return;
@@ -207,28 +200,13 @@ cartList.addEventListener("change", (event) => {
   setQuantity(Number(input.dataset.quantity), input.value);
 });
 
-checkoutBtn.addEventListener("click", () => {
-  if (cart.length === 0) {
-    alert("Корзина пуста");
-    return;
-  }
-  orderModal.showModal();
-});
-
-closeModalBtn.addEventListener("click", () => {
-  orderModal.close();
-});
-
 /* ---------- Валидация формы ---------- */
-
 const phoneRegex = /^\+?[0-9\s\-()]{10,18}$/;
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 function showError(input, message) {
   input.classList.add("invalid");
-  const errorEl = orderForm.querySelector(
-    `[data-error-for="${input.name}"]`
-  );
+  const errorEl = orderForm.querySelector(`[data-error-for="${input.name}"]`);
   if (errorEl) {
     errorEl.textContent = message;
     errorEl.classList.add("visible");
@@ -237,13 +215,20 @@ function showError(input, message) {
 
 function clearError(input) {
   input.classList.remove("invalid");
-  const errorEl = orderForm.querySelector(
-    `[data-error-for="${input.name}"]`
-  );
+  const errorEl = orderForm.querySelector(`[data-error-for="${input.name}"]`);
   if (errorEl) {
     errorEl.textContent = "";
     errorEl.classList.remove("visible");
   }
+}
+
+function validateRequired(input, message) {
+  if (!input.value.trim()) {
+    showError(input, message);
+    return false;
+  }
+  clearError(input);
+  return true;
 }
 
 function validatePhone(input) {
@@ -254,14 +239,10 @@ function validatePhone(input) {
     return false;
   }
 
-  // Приводим к виду без пробелов, скобок и дефисов для проверки длины
   const digits = value.replace(/[^\d]/g, "");
 
   if (!phoneRegex.test(value)) {
-    showError(
-      input,
-      "Телефон должен содержать только цифры, пробелы, +, -, скобки"
-    );
+    showError(input, "Телефон должен содержать только цифры, пробелы, +, -, скобки");
     return false;
   }
 
@@ -277,7 +258,7 @@ function validatePhone(input) {
 function validateEmail(input) {
   const value = input.value.trim();
 
-  // Email необязателен - если пусто, всё ок
+  // Email необязателен — если пусто, всё ок
   if (!value) {
     clearError(input);
     return true;
@@ -292,33 +273,20 @@ function validateEmail(input) {
   return true;
 }
 
-function validateRequired(input, message) {
-  if (!input.value.trim()) {
-    showError(input, message);
-    return false;
-  }
-  clearError(input);
-  return true;
-}
-
-
-
+/* ---------- Автоформатирование телефона ---------- */
 const phoneInput = orderForm.elements.phone;
 
 phoneInput.addEventListener("input", () => {
   let digits = phoneInput.value.replace(/\D/g, "");
 
-  // Если начинается с 8, заменяем на 7 (привычный российский формат)
   if (digits.startsWith("8")) {
     digits = "7" + digits.slice(1);
   }
 
-  // Если начинается с 9 (без кода), подставляем 7
   if (digits.startsWith("9")) {
     digits = "7" + digits;
   }
 
-  // Если начинается с 7, форматируем как +7 (XXX) XXX-XX-XX
   if (digits.startsWith("7")) {
     let result = "+7";
     if (digits.length > 1) result += " (" + digits.slice(1, 4);
@@ -333,7 +301,38 @@ phoneInput.addEventListener("input", () => {
 
 phoneInput.addEventListener("blur", () => validatePhone(phoneInput));
 
+/* ---------- Открытие / закрытие модального окна ---------- */
+checkoutBtn.addEventListener("click", () => {
+  if (cart.length === 0) {
+    alert("Корзина пуста");
+    return;
+  }
+  orderModal.showModal();
+});
 
+closeModalBtn.addEventListener("click", () => {
+  orderModal.close();
+});
+
+/* ---------- Сброс ошибок при вводе ---------- */
+["firstName", "lastName", "address"].forEach((name) => {
+  const input = orderForm.elements[name];
+  input.addEventListener("input", () => clearError(input));
+});
+
+const emailInput = orderForm.elements.email;
+
+emailInput.addEventListener("input", () => {
+  clearError(emailInput);
+});
+
+emailInput.addEventListener("blur", () => {
+  if (emailInput.value.trim() !== "") {
+    validateEmail(emailInput);
+  }
+});
+
+/* ---------- Отправка формы ---------- */
 orderForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -379,24 +378,6 @@ orderForm.addEventListener("submit", (event) => {
   renderCart();
 });
 
-
-["firstName", "lastName", "address"].forEach((name) => {
-  const input = orderForm.elements[name];
-  input.addEventListener("input", () => clearError(input));
-});
-
-const emailInput = orderForm.elements.email;
-
-emailInput.addEventListener("input", () => {
-  clearError(emailInput);
-});
-
-// При уходе из поля проверяем email, но только если он не пустой
-emailInput.addEventListener("blur", () => {
-  if (emailInput.value.trim() !== "") {
-    validateEmail(emailInput);
-  }
-});
-
+/* ---------- Инициализация ---------- */
 renderProducts();
 renderCart();
