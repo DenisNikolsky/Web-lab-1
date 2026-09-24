@@ -1,22 +1,36 @@
 const products = [
-  { id: 1, title: "Кружка", price: 500 },
-  { id: 2, title: "Термос", price: 1500 },
-  { id: 3, title: "Плед", price: 2000 },
-  { id: 4, title: "Лампа", price: 1200 },
-  { id: 5, title: "Рюкзак", price: 3000 },
-  { id: 6, title: "Наушники", price: 2500 },
+  { id: 1,  title: "Кружка",                    price: 500,               emoji: "☕"  },
+  { id: 2,  title: "Термос",                    price: 1500,              emoji: "🥤"  },
+  { id: 3,  title: "Плед",                      price: 2000,              emoji: "🛋️" },
+  { id: 4,  title: "Лампа",                     price: 1200,              emoji: "💡"  },
+  { id: 5,  title: "Рюкзак",                    price: 3000,              emoji: "🎒"  },
+  { id: 6,  title: "Наушники",                  price: 2500,              emoji: "🎧"  },
+
+  { id: 7,  title: "Губозакаточная машинка",    price: 999999,            emoji: "🌀"  },
+  { id: 8,  title: "Принтер для денег",         price: 1000000,           emoji: "🖨️" },
+  { id: 9,  title: "МКС",                       price: 150000000000,      emoji: "🛰️" },
+  { id: 10, title: "Билет из Саратова",         price: 500,               emoji: "🎫"  },
 ];
 
 const STORAGE_KEY = "shop-cart";
-
 const productsContainer = document.getElementById("products");
 const cartList = document.getElementById("cart-list");
 const cartEmpty = document.getElementById("cart-empty");
 const cartTotal = document.getElementById("cart-total");
+const cartCount = document.getElementById("cart-count");
 const checkoutBtn = document.getElementById("checkout-btn");
 const orderModal = document.getElementById("order-modal");
 const orderForm = document.getElementById("order-form");
 const closeModalBtn = document.getElementById("close-modal");
+
+const productEmoji = {
+  1: "☕",
+  2: "🥤",
+  3: "🛋️",
+  4: "💡",
+  5: "🎒",
+  6: "🎧",
+};
 
 let cart = loadCart();
 
@@ -45,10 +59,11 @@ function renderProducts() {
     .map(
       (product) => `
       <article class="product-card">
+        <div class="product-card__emoji">${productEmoji[product.id] || "📦"}</div>
         <h3>${product.title}</h3>
         <p class="price">${formatPrice(product.price)}</p>
         <button class="btn btn-primary" type="button" data-add="${product.id}">
-          Добавить в корзину
+          В корзину
         </button>
       </article>
     `
@@ -57,6 +72,16 @@ function renderProducts() {
 }
 
 function renderCart() {
+  const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  cartCount.textContent = totalCount;
+
+  if (cart.length === 0) {
+    cartList.innerHTML = "";
+    cartEmpty.hidden = false;
+    cartTotal.textContent = formatPrice(0);
+    return;
+  }
+
   if (cart.length === 0) {
     cartList.innerHTML = "";
     cartEmpty.hidden = false;
@@ -194,17 +219,183 @@ closeModalBtn.addEventListener("click", () => {
   orderModal.close();
 });
 
+/* ---------- Валидация формы ---------- */
+
+const phoneRegex = /^\+?[0-9\s\-()]{10,18}$/;
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+function showError(input, message) {
+  input.classList.add("invalid");
+  const errorEl = orderForm.querySelector(
+    `[data-error-for="${input.name}"]`
+  );
+  if (errorEl) {
+    errorEl.textContent = message;
+    errorEl.classList.add("visible");
+  }
+}
+
+function clearError(input) {
+  input.classList.remove("invalid");
+  const errorEl = orderForm.querySelector(
+    `[data-error-for="${input.name}"]`
+  );
+  if (errorEl) {
+    errorEl.textContent = "";
+    errorEl.classList.remove("visible");
+  }
+}
+
+function validatePhone(input) {
+  const value = input.value.trim();
+
+  if (!value) {
+    showError(input, "Укажите номер телефона");
+    return false;
+  }
+
+  // Приводим к виду без пробелов, скобок и дефисов для проверки длины
+  const digits = value.replace(/[^\d]/g, "");
+
+  if (!phoneRegex.test(value)) {
+    showError(
+      input,
+      "Телефон должен содержать только цифры, пробелы, +, -, скобки"
+    );
+    return false;
+  }
+
+  if (digits.length < 10 || digits.length > 15) {
+    showError(input, "В номере должно быть от 10 до 15 цифр");
+    return false;
+  }
+
+  clearError(input);
+  return true;
+}
+
+function validateEmail(input) {
+  const value = input.value.trim();
+
+  // Email необязателен - если пусто, всё ок
+  if (!value) {
+    clearError(input);
+    return true;
+  }
+
+  if (!emailRegex.test(value)) {
+    showError(input, "Введите корректный email");
+    return false;
+  }
+
+  clearError(input);
+  return true;
+}
+
+function validateRequired(input, message) {
+  if (!input.value.trim()) {
+    showError(input, message);
+    return false;
+  }
+  clearError(input);
+  return true;
+}
+
+
+
+const phoneInput = orderForm.elements.phone;
+
+phoneInput.addEventListener("input", () => {
+  let digits = phoneInput.value.replace(/\D/g, "");
+
+  // Если начинается с 8, заменяем на 7 (привычный российский формат)
+  if (digits.startsWith("8")) {
+    digits = "7" + digits.slice(1);
+  }
+
+  // Если начинается с 9 (без кода), подставляем 7
+  if (digits.startsWith("9")) {
+    digits = "7" + digits;
+  }
+
+  // Если начинается с 7, форматируем как +7 (XXX) XXX-XX-XX
+  if (digits.startsWith("7")) {
+    let result = "+7";
+    if (digits.length > 1) result += " (" + digits.slice(1, 4);
+    if (digits.length >= 5) result += ") " + digits.slice(4, 7);
+    if (digits.length >= 8) result += "-" + digits.slice(7, 9);
+    if (digits.length >= 10) result += "-" + digits.slice(9, 11);
+    phoneInput.value = result;
+  } else {
+    phoneInput.value = digits;
+  }
+});
+
+phoneInput.addEventListener("blur", () => validatePhone(phoneInput));
+
+
 orderForm.addEventListener("submit", (event) => {
   event.preventDefault();
+
+  const firstName = orderForm.elements.firstName;
+  const lastName = orderForm.elements.lastName;
+  const address = orderForm.elements.address;
+  const phone = orderForm.elements.phone;
+  const email = orderForm.elements.email;
+
+  const isFirstNameOk = validateRequired(firstName, "Укажите имя");
+  const isLastNameOk = validateRequired(lastName, "Укажите фамилию");
+  const isAddressOk = validateRequired(address, "Укажите адрес доставки");
+  const isPhoneOk = validatePhone(phone);
+  const isEmailOk = validateEmail(email);
+
+  const isValid =
+    isFirstNameOk &&
+    isLastNameOk &&
+    isAddressOk &&
+    isPhoneOk &&
+    isEmailOk;
+
+  if (!isValid) {
+    const firstInvalid = orderForm.querySelector("input.invalid");
+    if (firstInvalid) firstInvalid.focus();
+    return;
+  }
 
   alert("Заказ создан!");
 
   orderForm.reset();
   orderModal.close();
 
+  orderForm
+    .querySelectorAll(".field-error")
+    .forEach((el) => el.classList.remove("visible"));
+  orderForm
+    .querySelectorAll("input.invalid")
+    .forEach((el) => el.classList.remove("invalid"));
+
   cart = [];
   saveCart();
   renderCart();
+});
+
+
+["firstName", "lastName", "address"].forEach((name) => {
+  const input = orderForm.elements[name];
+  input.addEventListener("input", () => clearError(input));
+});
+
+const emailInput = orderForm.elements.email;
+
+emailInput.addEventListener("input", () => {
+  clearError(emailInput);
+});
+
+// При уходе из поля проверяем email, но только если он не пустой
+emailInput.addEventListener("blur", () => {
+  if (emailInput.value.trim() !== "") {
+    validateEmail(emailInput);
+  }
 });
 
 renderProducts();
