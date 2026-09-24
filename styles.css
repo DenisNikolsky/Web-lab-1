@@ -566,15 +566,20 @@ body {
 
 @media (max-width: 600px) {
   .header__inner {
-    padding: 12px 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 16px;
   }
 
   .nav {
-    gap: 14px;
+    width: 100%;
+    gap: 18px;
+    justify-content: space-between;
   }
 
   .nav a {
-    font-size: 0.88rem;
+    font-size: 0.9rem;
   }
 
   .logo__text {
